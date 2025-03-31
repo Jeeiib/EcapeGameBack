@@ -1,24 +1,39 @@
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql');
-const swaggerUi = require('swagger-ui-express');
+const express = require("express");
+const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
 
-const app = express();  
+// Import des routes
+const clientsRoutes = require("./routes/clientsRoutes");
+const authRoutes = require("./routes/authRoutes");
+const escapesRoutes = require("./routes/escapesRoutes");
+const paymentsRoutes = require("./routes/paymentsRoutes");
+const reservationRoutes = require("./routes/reservationRoute");
+
+const app = express();
 const PORT = process.env.PORT || 3000;
-
 
 //Middleware
 app.use(cors());
 app.use(express.json());
 
-//Routes
-app.get('/', (req, res) => {
-    res.send('Welcome to the Escape Game API');
-}
-);
+//Configuration des routes
+app.use("/clients", clientsRoutes);
+app.use("/auth", authRoutes);
+app.use("/escapes", escapesRoutes);
+app.use("/payments", paymentsRoutes);
+app.use("/reservations", reservationRoutes);
 
-//Démarrage du serveur
-app.listen(PORT, () => {
+// Route de base
+app.get("/", (req, res) => {
+  res.send("Welcome to the Escape Game API");
+});
+
+// Démarrer le serveur uniquement si le fichier est exécuté directement (pas importé)
+if (require.main === module) {
+  app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+  });
 }
-);
+
+
+module.exports = app;

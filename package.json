@@ -9,5 +9,10 @@
     "nodemailer": "^6.10.0",
     "supertest": "^7.1.0",
     "swagger-ui-express": "^5.0.1"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
   }
 }

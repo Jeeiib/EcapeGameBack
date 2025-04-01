@@ -24,12 +24,12 @@ router.get("/totalCostAbove/:price", (req, res) => {
 });
 
 // Route to get clients by registration date
-router.get("/registrationDate/:month/:year", (req, res) => {
+router.get("/clientsByregistrationDate/:month/:year", (req, res) => {
   ClientsController.clientsByRegistrationDate(req, res);
 });
 
 // Route to get clients by reservation date
-router.get("/reservationDate/:month/:year", (req, res) => {
+router.get("/clientsreservationDate/:month/:year", (req, res) => {
   ClientsController.clientsByReservationDate(req, res);
 });
 
@@ -56,6 +56,11 @@ router.patch("/:id", AuthController.verifyToken, (req, res) => {
 // Route to delete a client
 router.delete("/:id", AuthController.verifyToken, (req, res) => {
   ClientsController.DeleteClient(req, res);
+});
+
+// Route to get a client by his email
+router.get("/email/:email", (req, res) => {
+  ClientsController.GetClientByEmail(req, res);
 });
 
 // Route to get One client

@@ -87,7 +87,7 @@ function maxAmountSpent() {
   return connection
     .promise()
     .query(
-      'SELECT CONCAT(prenom," ", nom) as client amount as total FROM client INNER JOIN reservaion ON reservation.id_client = client.id_client INNER JOIN payer ON payer.id_reservation = reservation.id_reservation INNER JOIN payment ON payment.id_payment = payer.id_payment ORDER BY amount DESC limit 1'
+      'SELECT CONCAT(prenom," ", nom) as client, amount as total FROM client INNER JOIN reservation ON reservation.id_client = client.id_client INNER JOIN payer ON payer.id_reservation = reservation.id_reservation INNER JOIN payment ON payment.id_payment = payer.id_payment ORDER BY amount DESC limit 1'
     )
     .then((results) => {
       return results[0];
@@ -114,7 +114,7 @@ function AddClient(clientData) {
     });
 }
 
-async function UpdateClient(id, client){
+async function UpdateClient(client, id){
     const results = await connection
     .promise()
     .query("UPDATE client SET ? WHERE id_client = ?", [client, id]);

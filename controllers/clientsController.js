@@ -131,6 +131,22 @@ async function DeleteClient (req,res) {
     }
 }
 
+async function GetClientByEmail(req, res) {
+    try {
+        const client = await clientsService.findClientByEmail(req.params.email);
+        if (!client) {
+            res.status(404);
+            res.json({ error: 'Client not found.' });
+            return;
+        }
+        res.status(200);
+        res.json(client);
+    } catch (error) {
+        res.status(500);
+        res.json({ error: 'An error occurred while fetching the client by email.' });
+    }
+}
+
 async function findMe(req,res) {
     try {
         const user = await clientsService.oneClient(req.user.id);
@@ -154,5 +170,6 @@ module.exports = {
     AddClient,
     UpdateClient,
     DeleteClient,
-    findMe
+    findMe,
+    GetClientByEmail
 };

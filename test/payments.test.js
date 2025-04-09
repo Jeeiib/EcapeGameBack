@@ -39,7 +39,7 @@ test("GET /above/:amount dois retourner un tableau des paiements supérieurs à 
 test("GET /status/:status dois retourner un tableau des paiements par statut de reservation", async () => {
   //arrange
   const response = await supertest(app).get(
-    "/payments/reservationStatus/:Confirmée"
+    "/payments/reservationStatus/Confirmée"
   );
   //act
   expect(response.status).toBe(200);
@@ -50,7 +50,7 @@ test("GET /status/:status dois retourner un tableau des paiements par statut de 
 test("GET /total/status/:status dois retourner le montant total par statut de reservation", async () => {
   //arrange
   const response = await supertest(app).get(
-    "/payments/total/status/:Confirmée"
+    "/payments/total/status/Confirmée"
   );
   //act
   expect(response.status).toBe(200);

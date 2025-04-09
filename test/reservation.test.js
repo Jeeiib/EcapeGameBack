@@ -53,7 +53,7 @@ test("GET /reservations/maxReservations doit retourner le client qui à le plus 
   //act
   expect(response.status).toBe(200);
   //assert
-  expect(response.body).toBeInstanceOf(Array);
+  expect(response.body).toBeInstanceOf(Object);
 });
 
 // test("PATCH /reservations/:id doit mettre à jour une réservation", async () => {

@@ -81,12 +81,23 @@ async function clientsByEscapeRoom(req, res) {
 
 async function maxAmountSpent(req, res) {
     try {
-        const maxAmountSpent = await clientsService.maxAmountSpent();
-        res.status(200);
-        res.json(maxAmountSpent);
+        const result = await clientsService.maxAmountSpent();
+        
+        // Vérifier si le résultat est vide et gérer ce cas
+        if (!result || result.length === 0) {
+            return res.status(404).json({ 
+                message: "Aucun client avec des paiements n'a été trouvé" 
+            });
+        }
+        
+        // Utiliser le chaînage pour éviter les erreurs potentielles
+        res.status(200).json(result);
     } catch (error) {
-        res.status(500);
-        res.json({ error: 'An error occurred while fetching the maximum amount spent.' });
+        console.error("Error in maxAmountSpent:", error);
+        res.status(500).json({ 
+            error: 'An error occurred while fetching the maximum amount spent.',
+            details: error.message 
+        });
     }
 }
 
@@ -104,14 +115,47 @@ async function AddClient (req,res) {
     }
 }
 
-async function UpdateClient (req,res) {
+async function UpdateClient(req, res) {
     try {
-        const UpdateClient = await clientsService.UpdateClient(req.body, req.params.id);
-        res.status(200);
-        res.json(UpdateClient);
+        // Vérifier que l'ID client existe
+        const existingClient = await clientsService.oneClient(req.params.id);
+        if (!existingClient) {
+            return res.status(404).json({ error: 'Client not found.' });
+        }
+        
+        // Créer un objet avec les données à mettre à jour
+        const updateData = {};
+        
+        // Copier les champs à mettre à jour (sauf le mot de passe pour l'instant)
+        const allowedFields = ['prenom', 'nom', 'email', 'phone', 'role'];
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        });
+        
+        // Traiter le mot de passe séparément s'il est fourni
+        if (req.body.password) {
+            // Hasher le mot de passe avant de le stocker
+            updateData.password = bcrypt.hashSync(req.body.password, 10);
+        }
+        
+        // Vérifier qu'il y a des données à mettre à jour
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update.' });
+        }
+        
+        // Mettre à jour le client
+        const updatedClient = await clientsService.UpdateClient(updateData, req.params.id);
+        
+        // Retourner la réponse
+        res.status(200).json(updatedClient);
     } catch (error) {
-        res.status(500);
-        res.json({ error: 'An error occurred while updating the client.' });
+        console.error('Error updating client:', error);
+        res.status(500).json({ 
+            error: 'An error occurred while updating the client.',
+            details: error.message 
+        });
     }
 }
 

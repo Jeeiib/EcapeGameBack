@@ -80,6 +80,7 @@ async function AddReservation(reservation) {
   console.log("Données de réservation reçues:", reservation);
   
   try {
+    // Étape 1: Créer la réservation
     const results = await connection
       .promise()
       .query(
@@ -88,13 +89,42 @@ async function AddReservation(reservation) {
           reservation.id_client,
           reservation.id_escape,
           reservation.lieu,
-          reservation.reservation_status || "En attente", // Par défaut "En attente" si non fourni
+          reservation.reservation_status || "En attente",
           reservation.prix_total,
           reservation.date_heure,
         ]
       );
-    console.log("Résultat de l'insertion:", results);
-    return { id_reservation: results[0].insertId }; // Retourner l'ID généré
+    
+    const id_reservation = results[0].insertId;
+    
+    // Étape 2: Si un paiement est fourni, créer un paiement associé
+    if (reservation.payment) {
+      const paymentResults = await connection
+        .promise()
+        .query(
+          "INSERT INTO payment (payment_date, amount, payment_method) VALUES (NOW(), ?, ?)",
+          [
+            reservation.prix_total, // Montant du paiement = prix total de la réservation
+            reservation.payment.payment_method || "Carte bancaire" // Méthode de paiement par défaut
+          ]
+        );
+      
+      const id_payment = paymentResults[0].insertId;
+      
+      // Étape 3: Établir la relation dans la table payer
+      await connection
+        .promise()
+        .query(
+          "INSERT INTO payer (id_payment, id_reservation) VALUES (?, ?)",
+          [id_payment, id_reservation]
+        );
+      
+      return { 
+        id_reservation: id_reservation,
+        id_payment: id_payment
+      };
+    }
+    return { id_reservation: id_reservation };
   } catch (error) {
     console.error("Erreur lors de l'ajout de la réservation:", error);
     throw error;

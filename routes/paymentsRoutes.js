@@ -48,6 +48,11 @@ router.post("/", AuthController.verifyToken, (req, res) => {
   PaymentsController.AddPayment(req, res);
 });
 
+// Route pour lier un paiement à une réservation
+router.post("/link/:id_payment/:id_reservation", AuthController.verifyToken, (req, res) => {
+  PaymentsController.linkPaymentToReservation(req, res);
+});
+
 // Route to update a payment
 router.patch("/:id", AuthController.verifyToken, (req, res) => {
   PaymentsController.UpdatePayment(req, res);

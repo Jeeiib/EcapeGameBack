@@ -97,7 +97,7 @@ async function PricesBelow (req,res) {
 
 async function PricesBetween (req,res) {
     try {
-        const PricesBetween = await EscapeService.PricesBetween(req.params.min, req.params.max);
+        const PricesBetween = await EscapeService.PricesBetween(req.params.minPrice, req.params.maxPrice);
         res.status(200);
         res.json(PricesBetween);
     } catch (error) {

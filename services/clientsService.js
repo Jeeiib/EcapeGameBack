@@ -71,12 +71,12 @@ function clientsByReservationDate(month, year) {
     });
 }
 
-function clientsByEscapeRoom(name) {
+function clientsByEscapeRoom(id) {
   return connection
     .promise()
     .query(
-      "SELECT DISTINCT client.id_client, prenom, nom, email, phone, date_enregistrement FROM client INNER JOIN reservation ON reservation.id_client = client.id_client INNER JOIN escape_game ON escape_game.id_escape = reservation.id_escape WHERE nom_escape = ?",
-      [name]
+      "SELECT DISTINCT client.id_client, prenom, nom, email, phone, date_enregistrement FROM client INNER JOIN reservation ON reservation.id_client = client.id_client INNER JOIN escape_game ON escape_game.id_escape = reservation.id_escape WHERE escape_game.id_escape = ?",
+      [id]
     )
     .then((results) => {
       return results[0];
@@ -87,10 +87,19 @@ function maxAmountSpent() {
   return connection
     .promise()
     .query(
-      'SELECT CONCAT(prenom," ", nom) as client, amount as total FROM client INNER JOIN reservation ON reservation.id_client = client.id_client INNER JOIN payer ON payer.id_reservation = reservation.id_reservation INNER JOIN payment ON payment.id_payment = payer.id_payment ORDER BY amount DESC limit 1'
+      'SELECT CONCAT(client.prenom, " ", client.nom) as client, SUM(reservation.prix_total) as total ' +
+      'FROM client ' +
+      'INNER JOIN reservation ON reservation.id_client = client.id_client ' +
+      'GROUP BY client.id_client ' +
+      'ORDER BY total DESC ' +
+      'LIMIT 1'
     )
     .then((results) => {
-      return results[0];
+      return results[0][0] || { client: "Aucun", total: 0 };
+    })
+    .catch(error => {
+      console.error("Error in maxAmountSpent:", error);
+      throw error;
     });
 }
 

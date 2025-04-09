@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
 
 // Import des routes
 const clientsRoutes = require("./routes/clientsRoutes");
@@ -15,6 +16,9 @@ const PORT = process.env.PORT || 3000;
 //Middleware
 app.use(cors());
 app.use(express.json());
+
+// Configuration Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //Configuration des routes
 app.use("/clients", clientsRoutes);

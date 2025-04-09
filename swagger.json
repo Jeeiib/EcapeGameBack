@@ -1,0 +1,2312 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Escape Game API",
+    "description": "API pour gérer les escape games, réservations, clients et paiements",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Support API",
+      "email": "support@escapegame.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Serveur de développement"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Client": {
+        "type": "object",
+        "properties": {
+          "id_client": {
+            "type": "integer",
+            "description": "ID unique du client"
+          },
+          "prenom": {
+            "type": "string",
+            "description": "Prénom du client"
+          },
+          "nom": {
+            "type": "string",
+            "description": "Nom du client"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email du client"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Numéro de téléphone du client"
+          },
+          "date_enregistrement": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date d'enregistrement du client"
+          }
+        }
+      },
+      "EscapeGame": {
+        "type": "object",
+        "properties": {
+          "id_escape": {
+            "type": "integer",
+            "description": "ID unique de l'escape game"
+          },
+          "nom_escape": {
+            "type": "string",
+            "description": "Nom de l'escape game"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description de l'escape game"
+          },
+          "difficulte": {
+            "type": "string",
+            "enum": ["Facile", "Moyen", "Difficile"],
+            "description": "Niveau de difficulté de l'escape game"
+          },
+          "capacite": {
+            "type": "integer",
+            "description": "Nombre de joueurs maximum"
+          },
+          "prix": {
+            "type": "number",
+            "format": "float",
+            "description": "Prix de l'escape game"
+          },
+          "statut": {
+            "type": "integer",
+            "enum": [0, 1],
+            "description": "0 = Indisponible, 1 = Disponible"
+          }
+        }
+      },
+      "Reservation": {
+        "type": "object",
+        "properties": {
+          "id_reservation": {
+            "type": "integer",
+            "example": 1
+          },
+          "id_client": {
+            "type": "integer",
+            "example": 3
+          },
+          "id_escape": {
+            "type": "integer",
+            "example": 1
+          },
+          "date_heure": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-04-07T10:00:00"
+          },
+          "prix_total": {
+            "type": "number",
+            "format": "float",
+            "example": 100.0
+          },
+          "lieu": {
+            "type": "string",
+            "example": "Sur site"
+          },
+          "reservation_status": {
+            "type": "string",
+            "example": "Annulée"
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id_payment": {
+            "type": "integer",
+            "example": 1
+          },
+          "amount": {
+            "type": "number",
+            "format": "float",
+            "example": 120.0
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "credit_card"
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-15T14:30:00Z"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email de l'utilisateur"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Mot de passe de l'utilisateur"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT token pour l'authentification"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentification"],
+        "summary": "Connexion utilisateur",
+        "description": "Authentifie un utilisateur et retourne un token JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion réussie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email ou mot de passe incorrect"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer tous les clients",
+        "description": "Retourne la liste de tous les clients",
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Clients"],
+        "summary": "Ajouter un nouveau client",
+        "description": "Créer un nouveau compte client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prenom", "nom", "email", "password", "phone"],
+                "properties": {
+                  "prenom": {
+                    "type": "string",
+                    "example": "Jean"
+                  },
+                  "nom": {
+                    "type": "string",
+                    "example": "Dupont"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jean.dupont@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "votreMotDePasse"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "0612345678"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["USER", "ADMIN"],
+                    "default": "USER",
+                    "example": "USER"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Client créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "prenom": {
+                      "type": "string",
+                      "example": "Jean"
+                    },
+                    "nom": {
+                      "type": "string",
+                      "example": "Dupont"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "jean.dupont@example.com"
+                    },
+                    "phone": {
+                      "type": "string",
+                      "example": "0612345678"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "USER"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "409": {
+            "description": "Un client avec cet email existe déjà"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/me": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer mes informations",
+        "description": "Retourne les informations du client connecté",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations du client",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/clientsByYear/{year}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer les clients par année",
+        "description": "Retourne la liste des clients inscrits dans une année donnée",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Année de recherche"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/email/{email}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer un client par email",
+        "description": "Retourne les informations d'un client par son email",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "Email du client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations du client",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Client non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/{id}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer un client par ID",
+        "description": "Retourne les informations d'un client spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations du client",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Client non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Clients"],
+        "summary": "Mettre à jour un client",
+        "description": "Met à jour les informations d'un client",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du client"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prenom": {
+                    "type": "string",
+                    "example": "Jean"
+                  },
+                  "nom": {
+                    "type": "string",
+                    "example": "Dupont"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jean.dupont@example.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "0612345678"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "nouveauMotDePasse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client mis à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Client"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides ou aucun champ à mettre à jour"
+          },
+          "401": {
+            "description": "Non autorisé"
+          },
+          "404": {
+            "description": "Client non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Clients"],
+        "summary": "Supprimer un client",
+        "description": "Supprime un client de la base de données",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Client supprimé avec succès"
+          },
+          "401": {
+            "description": "Non autorisé"
+          },
+          "404": {
+            "description": "Client non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/totalCostAbove/{price}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer les clients avec un coût total supérieur à un montant",
+        "description": "Retourne la liste des clients dont le coût total des réservations est supérieur au montant spécifié",
+        "parameters": [
+          {
+            "name": "price",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Montant minimum du coût total"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/clientsByregistrationDate/{month}/{year}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer les clients par date d'enregistrement",
+        "description": "Retourne la liste des clients enregistrés dans un mois et une année spécifiques",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "Mois (1-12)"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Année"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/clientsreservationDate/{month}/{year}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer les clients par date de réservation",
+        "description": "Retourne la liste des clients ayant fait des réservations dans un mois et une année spécifiques",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "Mois (1-12)"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Année"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/escapeRoom/{id}": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer les clients par escape room",
+        "description": "Retourne la liste des clients ayant réservé une escape room spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Nom de l'escape room"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id_client": {
+                        "type": "integer",
+                        "description": "ID unique du client"
+                      },
+                      "prenom": {
+                        "type": "string",
+                        "description": "Prénom du client"
+                      },
+                      "nom": {
+                        "type": "string",
+                        "description": "Nom du client"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Email du client"
+                      },
+                      "phone": {
+                        "type": "string",
+                        "description": "Numéro de téléphone du client"
+                      },
+                      "date_enregistrement": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Date d'enregistrement du client"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/clients/maxAmountSpent": {
+      "get": {
+        "tags": ["Clients"],
+        "summary": "Récupérer le montant maximum dépensé",
+        "description": "Retourne le client ayant dépensé le plus d'argent",
+        "responses": {
+          "200": {
+            "description": "Client avec le montant maximum dépensé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "client": {
+                      "type": "string",
+                      "description": "Nom complet du client (prénom + nom)"
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Montant total dépensé"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Aucun client avec paiement trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer tous les escape games",
+        "description": "Retourne la liste de tous les escape games",
+        "responses": {
+          "200": {
+            "description": "Liste des escape games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Escape Games"],
+        "summary": "Ajouter un nouveau jeu d'évasion",
+        "description": "Créer un nouveau jeu d'évasion (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nom_escape",
+                  "capacite",
+                  "prix",
+                  "difficulte",
+                  "lieu"
+                ],
+                "properties": {
+                  "nom_escape": {
+                    "type": "string",
+                    "example": "La Quête du Dragon"
+                  },
+                  "capacite": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 6
+                  },
+                  "prix": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 120.0
+                  },
+                  "difficulte": {
+                    "type": "string",
+                    "enum": ["Facile", "Intermédiaire", "Difficile"],
+                    "example": "Intermédiaire"
+                  },
+                  "lieu": {
+                    "type": "string",
+                    "enum": ["Sur site", "À domicile"],
+                    "example": "Sur site"
+                  },
+                  "statut": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "default": 1,
+                    "description": "0 = indisponible, 1 = disponible",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Jeu d'évasion créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_escape": {
+                      "type": "integer",
+                      "example": 8
+                    },
+                    "nom_escape": {
+                      "type": "string",
+                      "example": "La Quête du Dragon"
+                    },
+                    "capacite": {
+                      "type": "integer",
+                      "example": 6
+                    },
+                    "prix": {
+                      "type": "number",
+                      "example": 120.0
+                    },
+                    "difficulte": {
+                      "type": "string",
+                      "example": "Intermédiaire"
+                    },
+                    "lieu": {
+                      "type": "string",
+                      "example": "Sur site"
+                    },
+                    "statut": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/available": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games disponibles",
+        "description": "Retourne la liste des escape games avec le statut disponible",
+        "responses": {
+          "200": {
+            "description": "Liste des escape games disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/averageCapacity": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer la capacité moyenne",
+        "description": "Retourne la capacité moyenne de tous les escape games",
+        "responses": {
+          "200": {
+            "description": "Capacité moyenne",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "float"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/capacityAbove/{capacity}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games avec une capacité supérieure",
+        "description": "Retourne la liste des escape games avec une capacité supérieure à la valeur spécifiée",
+        "parameters": [
+          {
+            "name": "capacity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Capacité minimum"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des escape games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/difficulty/{difficulty}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games par difficulté",
+        "description": "Retourne la liste des escape games d'un niveau de difficulté spécifique",
+        "parameters": [
+          {
+            "name": "difficulty",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["Facile", "Moyen", "Difficile"]
+            },
+            "description": "Niveau de difficulté"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des escape games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/available/difficulty/{difficulty}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games disponibles par difficulté",
+        "description": "Retourne la liste des escape games disponibles d'un niveau de difficulté spécifique",
+        "parameters": [
+          {
+            "name": "difficulty",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["Facile", "Intermédiaire", "Difficile"]
+            },
+            "description": "Niveau de difficulté"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des escape games disponibles par difficulté",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/pricesBelow/{price}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games avec un prix inférieur",
+        "description": "Retourne la liste des escape games avec un prix inférieur à la valeur spécifiée",
+        "parameters": [
+          {
+            "name": "price",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Prix maximum"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des escape games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/pricesBetween/{minPrice}/{maxPrice}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer les escape games avec un prix entre deux valeurs",
+        "description": "Retourne la liste des escape games avec un prix compris entre les valeurs minimale et maximale spécifiées",
+        "parameters": [
+          {
+            "name": "minPrice",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Prix minimum"
+          },
+          {
+            "name": "maxPrice",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Prix maximum"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des escape games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscapeGame"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/escapes/{id}": {
+      "get": {
+        "tags": ["Escape Games"],
+        "summary": "Récupérer un escape game par ID",
+        "description": "Retourne les informations d'un escape game spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'escape game"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations de l'escape game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EscapeGame"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Escape game non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Escape Games"],
+        "summary": "Supprimer un escape game",
+        "description": "Supprime un escape game existant (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'escape game à supprimer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Escape game supprimé avec succès"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Escape game non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Escape Games"],
+        "summary": "Mettre à jour un escape game",
+        "description": "Met à jour les informations d'un escape game existant (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'escape game à modifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nom_escape": {
+                    "type": "string",
+                    "example": "La Quête du Dragon Modifiée"
+                  },
+                  "capacite": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 8
+                  },
+                  "prix": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 150.0
+                  },
+                  "difficulte": {
+                    "type": "string",
+                    "enum": ["Facile", "Intermédiaire", "Difficile"],
+                    "example": "Difficile"
+                  },
+                  "lieu": {
+                    "type": "string",
+                    "enum": ["Sur site", "À domicile"],
+                    "example": "À domicile"
+                  },
+                  "statut": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "0 = indisponible, 1 = disponible",
+                    "example": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Escape game mis à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_escape": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "nom_escape": {
+                      "type": "string",
+                      "example": "La Quête du Dragon Modifiée"
+                    },
+                    "capacite": {
+                      "type": "integer",
+                      "example": 8
+                    },
+                    "prix": {
+                      "type": "number",
+                      "example": 150.0
+                    },
+                    "difficulte": {
+                      "type": "string",
+                      "example": "Difficile"
+                    },
+                    "lieu": {
+                      "type": "string",
+                      "example": "À domicile"
+                    },
+                    "statut": {
+                      "type": "integer",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides ou aucun champ à mettre à jour"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Escape game non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer tous les paiements",
+        "description": "Retourne la liste de tous les paiements",
+        "responses": {
+          "200": {
+            "description": "Liste des paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Paiements"],
+        "summary": "Ajouter un nouveau paiement",
+        "description": "Créer un nouveau paiement (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "payment_method"],
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 120.0
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "example": "credit_card"
+                  },
+                  "payment_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-15T14:30:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Paiement créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "insertId": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "affectedRows": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer un paiement par ID",
+        "description": "Retourne les informations d'un paiement spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du paiement"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations du paiement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Paiement non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Paiements"],
+        "summary": "Mettre à jour un paiement",
+        "description": "Met à jour les informations d'un paiement existant (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du paiement à modifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 150.0
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "example": "paypal"
+                  },
+                  "payment_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-20T15:45:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Paiement mis à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "affectedRows": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "changedRows": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Paiement non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Paiements"],
+        "summary": "Supprimer un paiement",
+        "description": "Supprime un paiement existant (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du paiement à supprimer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Paiement supprimé avec succès"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Paiement non trouvé"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/method/{method}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer les paiements par méthode",
+        "description": "Retourne la liste des paiements effectués avec une méthode spécifique",
+        "parameters": [
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Méthode de paiement (ex: credit_card, paypal)",
+            "example": "credit_card"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/total/{month}/{year}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer le montant total par mois et année",
+        "description": "Retourne le montant total des paiements pour un mois et une année spécifiques",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(0[1-9]|1[0-2])$"
+            },
+            "description": "Mois (format: 01-12)",
+            "example": "01"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}$"
+            },
+            "description": "Année (format: YYYY)",
+            "example": "2023"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Montant total",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Montant total": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 1250.75
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/above/{amount}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer les paiements supérieurs à un montant",
+        "description": "Retourne la liste des paiements dont le montant est supérieur à la valeur spécifiée",
+        "parameters": [
+          {
+            "name": "amount",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Montant minimum",
+            "example": "100"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/reservationStatus/{status}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer les paiements par statut de réservation",
+        "description": "Retourne la liste des paiements associés à des réservations avec un statut spécifique",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Statut de la réservation",
+            "example": "confirmed"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/total/status/{status}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Récupérer le montant total par statut de réservation",
+        "description": "Retourne le montant total des paiements associés à des réservations avec un statut spécifique",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Statut de la réservation",
+            "example": "Confirmée"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Montant total",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Montant total": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 2500.0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/payments/count/{method}": {
+      "get": {
+        "tags": ["Paiements"],
+        "summary": "Compter les paiements par méthode",
+        "description": "Retourne le nombre de paiements effectués avec une méthode spécifique",
+        "parameters": [
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Méthode de paiement",
+            "example": "credit_card"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nombre de paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "COUNT(*)": {
+                      "type": "integer",
+                      "example": 15
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer toutes les réservations",
+        "description": "Retourne la liste de toutes les réservations",
+        "responses": {
+          "200": {
+            "description": "Liste des réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reservation"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Réservations"],
+        "summary": "Ajouter une nouvelle réservation",
+        "description": "Créer une nouvelle réservation (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_client",
+                  "id_escape",
+                  "date_heure",
+                  "prix_total",
+                  "lieu"
+                ],
+                "properties": {
+                  "id_client": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "id_escape": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "date_heure": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-07T10:00:00"
+                  },
+                  "prix_total": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 100.0
+                  },
+                  "lieu": {
+                    "type": "string",
+                    "example": "Sur site"
+                  },
+                  "reservation_status": {
+                    "type": "string",
+                    "example": "En attente",
+                    "default": "En attente"
+                  },
+                  "payment": {
+                    "type": "object",
+                    "properties": {
+                      "payment_method": {
+                        "type": "string",
+                        "example": "Carte bancaire"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Réservation créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_reservation": {
+                      "type": "integer",
+                      "example": 6
+                    },
+                    "id_payment": {
+                      "type": "integer",
+                      "example": 6
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/status/{reservation_status}": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer les réservations par statut",
+        "description": "Retourne la liste des réservations avec un statut spécifique",
+        "parameters": [
+          {
+            "name": "reservation_status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Statut de la réservation",
+            "example": "Confirmée"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reservation"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/averageTotalCost": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer le coût total moyen des réservations",
+        "description": "Retourne le coût total moyen de toutes les réservations",
+        "responses": {
+          "200": {
+            "description": "Coût total moyen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "averageTotalCost": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 150.0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/costAbove/{price}": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer les réservations avec un coût supérieur",
+        "description": "Retourne la liste des réservations dont le coût total est supérieur à la valeur spécifiée",
+        "parameters": [
+          {
+            "name": "price",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Prix minimum",
+            "example": 100
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reservation"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/nameEscape/{nom}": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer les réservations par nom d'escape game",
+        "description": "Retourne la liste des réservations pour un escape game spécifique",
+        "parameters": [
+          {
+            "name": "nom",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Nom de l'escape game",
+            "example": "Le Trône de Fer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reservation"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/maxReservations": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer le client avec le plus de réservations",
+        "description": "Retourne le client qui a effectué le plus grand nombre de réservations",
+        "responses": {
+          "200": {
+            "description": "Client et nombre de réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_client": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "Nombre de réservations": {
+                      "type": "integer",
+                      "example": 5
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/reservations/{id}": {
+      "get": {
+        "tags": ["Réservations"],
+        "summary": "Récupérer une réservation par ID",
+        "description": "Retourne les informations d'une réservation spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la réservation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations de la réservation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Réservation non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Réservations"],
+        "summary": "Mettre à jour une réservation",
+        "description": "Met à jour les informations d'une réservation existante (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la réservation"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reservation_status": {
+                    "type": "string",
+                    "example": "Confirmée"
+                  },
+                  "prix_total": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 120.0
+                  },
+                  "lieu": {
+                    "type": "string",
+                    "example": "À domicile"
+                  },
+                  "date_heure": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-15T16:00:00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Réservation mise à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Réservation non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Réservations"],
+        "summary": "Supprimer une réservation",
+        "description": "Supprime une réservation existante (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la réservation à supprimer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Réservation supprimée avec succès"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Réservation non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    }
+  }
+}

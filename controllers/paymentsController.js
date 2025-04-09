@@ -106,6 +106,22 @@ async function countByMethod(req, res) {
   }
 }
 
+async function linkPaymentToReservation(req, res) {
+  try {
+    const result = await paymentsService.linkPaymentToReservation(
+      req.params.id_payment,
+      req.params.id_reservation
+    );
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Erreur lors de la liaison:", error);
+    res.status(500).json({
+      error: "Une erreur est survenue lors de la liaison du paiement à la réservation.",
+      details: error.message
+    });
+  }
+}
+
 async function AddPayment(req, res) {
   try {
     const payment = await paymentsService.AddPayment(req.body);
@@ -133,8 +149,7 @@ async function UpdatePayment(req, res) {
 async function DeletePayment(req, res) {
   try {
     const payment = await paymentsService.DeletePayment(req.params.id);
-    res.status(204).end;
-    res.json(payment);
+    res.status(204).end();
   } catch (error) {
     res.status(500);
     res.json({ error: "An error occurred while deleting the payment." });
@@ -144,6 +159,7 @@ async function DeletePayment(req, res) {
 
 
 module.exports = {
+  linkPaymentToReservation,
   allPayments,
   onePayment,
   paymentsByMethod,

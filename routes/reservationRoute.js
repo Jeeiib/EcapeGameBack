@@ -8,11 +8,6 @@ router.get("/", (req, res) => {
   ReservationsController.allReservations(req, res);
 });
 
-// Route to get one reservation
-router.get("/:id", (req, res) => {
-  ReservationsController.OneReservation(req, res);
-});
-
 // Route to get reservations by status
 router.get("/status/:reservation_status", (req, res) => {
   ReservationsController.reservationsByStatus(req, res);
@@ -51,6 +46,11 @@ router.patch("/:id", AuthController.verifyToken, (req, res) => {
 // Route to delete a reservation
 router.delete("/:id", AuthController.verifyToken, (req, res) => {
   ReservationsController.DeleteReservation(req, res);
+});
+
+// Route to get one reservation
+router.get("/:id", (req, res) => {
+  ReservationsController.OneReservation(req, res);
 });
 
 module.exports = router;

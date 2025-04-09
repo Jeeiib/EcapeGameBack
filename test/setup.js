@@ -17,7 +17,8 @@ beforeAll(async () => {
     const response = await supertest(app)
       .post("/auth/login")
       .send({ email: "renartjeanbaptiste@gmail.com", password: "root" });
-    token = response.body.token;
+    // Stocker le token avec le préfixe Bearer
+    token = `Bearer ${response.body.token}`;
     console.log("Authentication successful for tests");
   } catch (error) {
     console.error("Error during test authentication:", error.message);
@@ -25,20 +26,11 @@ beforeAll(async () => {
 });
 
 // Après tous les tests
-afterAll(async () => {
-  // Fermer le serveur de test
-  if (server) {
-    await new Promise((resolve) => {
-      server.close(() => {
-        console.log("Test server closed");
-        resolve();
-      });
-    });
-  }
-
-  // Fermer toutes les connexions à la base de données (si nécessaire)
-  // Si vous avez une connexion à la base de données, fermez-la ici
-  // Par exemple: await connection.end();
+afterAll((done) => {
+  server.close(() => {
+    console.log("Test server closed");
+    done();
+  });
 });
 
 // Rendre les variables globales disponibles pour tous les tests

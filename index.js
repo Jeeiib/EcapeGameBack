@@ -5,7 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 // Import des routes
 const clientsRoutes = require("./routes/clientsRoutes");
 const authRoutes = require("./routes/authRoutes");
-const escapesRoutes = require("./routes/escapesRoutes");
+const escapesRoutes = require("./routes/escapeRoutes");
 const paymentsRoutes = require("./routes/paymentsRoutes");
 const reservationRoutes = require("./routes/reservationRoute");
 

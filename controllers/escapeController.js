@@ -31,16 +31,14 @@ async function AvailableGames (req,res) {
     }
 }
 
-async function averageCapacity (req,res) {
+async function averageCapacity(req, res) {
     try {
-        const averageCapacity = await EscapeService.averageCapacity();
-        res.status(200);
-        res.json(averageCapacity);
+      const averageCapacity = await EscapeService.averageCapacity();
+      res.status(200).json(averageCapacity); // Ajouter .json() pour renvoyer les données
     } catch (error) {
-        res.status(500);
-        res.json({ message : "An error as occurred while fetching the game"})
+      res.status(500).json({ message: "An error occurred while fetching the average capacity" });
     }
-}
+  }
 
 async function CapacityAbove (req,res) {
     try {
@@ -110,9 +108,8 @@ async function PricesBetween (req,res) {
 
 async function AddGame (req,res) {
     try {
-        const AddGame = await EscapeService.AddGame(req.body);
-        res.status(200);
-        res.json(AddGame);
+        const newGame = await EscapeService.AddGame(req.body);
+        res.status(201).json(newGame);
     } catch (error) {
         res.status(500);
         res.json({ message : "An error as occurred while fetching the game"})
@@ -133,11 +130,14 @@ async function UpdateGame (req,res) {
 async function DeleteGame (req,res) {
     try {
         await EscapeService.DeleteGame(req.params.id);
-        res.status(204);
-        res.json(DeleteGame);
+        // Pour 204 No Content, envoyez juste le statut sans corps
+        res.status(204).end();
     } catch (error) {
-        res.status(500);
-        res.json({ message : "An error as occurred while fetching the game"})
+        console.error("Error deleting game:", error);
+        res.status(500).json({ 
+            message: "An error occurred while deleting the game",
+            error: error.message 
+        });
     }
 }
 

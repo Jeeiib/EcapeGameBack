@@ -14,7 +14,7 @@ function onePayment(id) {
     .promise()
     .query("SELECT * FROM payment WHERE id_payment = ?", [id])
     .then((results) => {
-      return results[0];
+      return results[0][0];
     });
 }
 
@@ -30,7 +30,7 @@ function paymentsByMethod(method) {
 function totalByMonthAndYear(month,year){
     return connection.promise().query('SELECT SUM(amount) AS "Montant total" FROM payment WHERE MONTH(payment_date) = ? AND YEAR(payment_date) = ?', [month,year])
     .then((results) => {
-        return results[0];
+        return results[0][0];
     });
 }
 
@@ -41,15 +41,15 @@ function paymentsAbove(amount) {
     });
 }
 
-function paymentsByReservationsStatus(satus) {
-    return connection.promise().query('SELECT * FROM payment JOIN payer ON payer.id_payment = payment.id_payment JOIN reservation ON reservation.id_reservation = payer.id_reservation WHERE reservation.status = ?', [satus])
+function paymentsByReservationsStatus(status) {
+    return connection.promise().query('SELECT * FROM payment JOIN payer ON payer.id_payment = payment.id_payment JOIN reservation ON reservation.id_reservation = payer.id_reservation WHERE reservation.reservation_status = ?', [status])
     .then((results) => {
         return results[0];
     });
 }
 
 function totalByReservationsStatus(status) {
-    return connection.promise().query('SELECT SUM(amount) FROM payment JOIN payer ON payer.id_payment = payment.id_payment JOIN reservation ON reservation.id_reservation = payer.id_reservation WHERE reservation.status = ?', [status])
+    return connection.promise().query('SELECT SUM(amount) FROM payment JOIN payer ON payer.id_payment = payment.id_payment JOIN reservation ON reservation.id_reservation = payer.id_reservation WHERE reservation.reservation_status = ?', [status])
     .then((results) => {
         return results[0];
     });
@@ -58,7 +58,7 @@ function totalByReservationsStatus(status) {
 function countByMethod(method) {
     return connection.promise().query('SELECT COUNT(*) FROM payment WHERE payment_method = ?', [method])
     .then((results) => {
-        return results[0];
+        return results[0][0];
     });
 }
 

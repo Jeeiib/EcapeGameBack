@@ -14,7 +14,7 @@ function OneReservation(id) {
     .promise()
     .query("SELECT * FROM reservation WHERE id_reservation = ?", [id])
     .then((results) => {
-      return results[0];
+      return results[0][0];
     });
 }
 
@@ -32,7 +32,7 @@ function reservationsByStatus(reservation_status) {
 function averageTotalCost() {
   return connection
     .promise()
-    .query('SELECT AVG(prix_total) AS "Montant moyen" FROM reservation')
+    .query('SELECT AVG(prix_total) AS averageTotalCost FROM reservation')
     .then((results) => {
       return results[0];
     });
@@ -51,15 +51,25 @@ function reservationsByNomEscape(nom) {
   return connection
     .promise()
     .query(
-      "SELECT * FROM reservations INNER JOIN escape_game ON escape_game.id_escape = "
-    );
+      "SELECT reservation.* FROM reservation " +
+      "INNER JOIN escape_game ON escape_game.id_escape = reservation.id_escape " +
+      "WHERE escape_game.nom_escape = ?",
+      [nom]
+    )
+    .then((results) => {
+      return results[0];
+    })
+    .catch(error => {
+      console.error("Error in reservationsByNomEscape:", error);
+      throw error;
+    });
 }
 
 function maxReservations() {
   return connection
     .promise()
     .query(
-      'SELECT client.id_client, count(id_reservation) AS "Nombre de réservations" FROM client INNER JOIN reservation ON reservation.id_client = client.id_client GROUP, BY client.id_client'
+      'SELECT client.id_client, count(id_reservation) AS "Nombre de réservations" FROM client INNER JOIN reservation ON reservation.id_client = client.id_client GROUP BY client.id_client'
     )
     .then((results) => {
       return results[0];
@@ -67,20 +77,28 @@ function maxReservations() {
 }
 
 async function AddReservation(reservation) {
-  return connection
-    .promise()
-    .query(
-      'INSERT INTO reservation SET id_client = ?, id_escape = ?, date_heure = ?, prix_total = ?, reservation_status = "en attente" ',
-      [
-        reservation.user.id_client,
-        reservation.body_id_escape,
-        reservation.body_date_heure,
-        reservation.body_prix_total,
-      ]
-    )
-    .then((results) => {
-      return results[0];
-    });
+  console.log("Données de réservation reçues:", reservation);
+  
+  try {
+    const results = await connection
+      .promise()
+      .query(
+        "INSERT INTO reservation (id_client, id_escape, lieu, reservation_status, prix_total, date_heure) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          reservation.id_client,
+          reservation.id_escape,
+          reservation.lieu,
+          reservation.reservation_status || "En attente", // Par défaut "En attente" si non fourni
+          reservation.prix_total,
+          reservation.date_heure,
+        ]
+      );
+    console.log("Résultat de l'insertion:", results);
+    return { id_reservation: results[0].insertId }; // Retourner l'ID généré
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de la réservation:", error);
+    throw error;
+  }
 }
 
 async function UpdateReservation(id, reservation) {

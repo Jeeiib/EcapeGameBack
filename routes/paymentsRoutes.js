@@ -29,7 +29,7 @@ router.get("/above/:amount", (req, res) => {
 });
 
 // Route to get payments by reservation status
-router.get("/status/:status", (req, res) => {
+router.get("/reservationStatus/:status", (req, res) => {
   PaymentsController.paymentsByReservationsStatus(req, res);
 });
 
@@ -45,17 +45,17 @@ router.get("/count/:method", (req, res) => {
 
 // Route to create a new payment
 router.post("/", AuthController.verifyToken, (req, res) => {
-  PaymentsController.createPayment(req, res);
+  PaymentsController.AddPayment(req, res);
 });
 
 // Route to update a payment
 router.patch("/:id", AuthController.verifyToken, (req, res) => {
-  PaymentsController.updatePayment(req, res);
+  PaymentsController.UpdatePayment(req, res);
 });
 
 // Route to delete a payment
 router.delete("/:id", AuthController.verifyToken, (req, res) => {
-  PaymentsController.deletePayment(req, res);
+  PaymentsController.DeletePayment(req, res);
 });
 
 

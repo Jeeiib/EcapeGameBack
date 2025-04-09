@@ -133,7 +133,7 @@ async function UpdatePayment(req, res) {
 async function DeletePayment(req, res) {
   try {
     const payment = await paymentsService.DeletePayment(req.params.id);
-    res.status(200);
+    res.status(204).end;
     res.json(payment);
   } catch (error) {
     res.status(500);

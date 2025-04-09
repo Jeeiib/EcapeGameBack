@@ -21,16 +21,16 @@ function OneGame(id) {
 function AvailableGames() {
   return connection
     .promise()
-    .query("SELECT * from escape_game WHERE status = 1")
+    .query("SELECT * from escape_game WHERE statut = 1")
     .then((results) => {
-      return results[0];
+      return results[0] || [];
     });
 }
 
 function averageCapacity() {
   return connection
     .promise()
-    .query("SELECT AVG(capacity) as 'Capacityé moyenne' FROM escape_game")
+    .query("SELECT AVG(capacite) as capacite_moyenne FROM escape_game")
     .then((results) => {
       return results[0][0];
     });
@@ -39,7 +39,7 @@ function averageCapacity() {
 function CapacityAbove(capacity) {
   return connection
     .promise()
-    .query("SELECT * FROM escape_game WHERE capacity >= ?", [capacity])
+    .query("SELECT * FROM escape_game WHERE capacite >= ?", [capacity])
     .then((results) => {
       return results[0];
     });
@@ -48,7 +48,7 @@ function CapacityAbove(capacity) {
 function PricesAbove(price) {
   return connection
     .promise()
-    .query("SELECT * FROM escape_game WHERE price >= ?", [price])
+    .query("SELECT * FROM escape_game WHERE prix >= ?", [price])
     .then((results) => {
       return results[0];
     });
@@ -66,7 +66,7 @@ function GamesByDifficulty(difficulty) {
 function AvailableGamesByDifficulty(difficulty) {
   return connection
     .promise()
-    .query("SELECT * FROM escape_game WHERE status = 1 AND difficulte LIKE ?", [
+    .query("SELECT * FROM escape_game WHERE statut = 1 AND difficulte LIKE ?", [
       difficulty,
     ])
     .then((results) => {
@@ -77,7 +77,7 @@ function AvailableGamesByDifficulty(difficulty) {
 function PricesBelow(price) {
   return connection
     .promise()
-    .query("SELECT * FROM escape_game WHERE price <= ?", [price])
+    .query("SELECT * FROM escape_game WHERE prix <= ?", [price])
     .then((results) => {
       return results[0];
     });
@@ -86,7 +86,7 @@ function PricesBelow(price) {
 function PricesBetween(min, max) {
   return connection
     .promise()
-    .query("SELECT * FROM escape_game WHERE price BETWEEN ? AND ?", [min, max])
+    .query("SELECT * FROM escape_game WHERE prix BETWEEN ? AND ?", [min, max])
     .then((results) => {
       return results[0];
     });

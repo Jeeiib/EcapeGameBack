@@ -94,7 +94,7 @@ async function maxReservations(req, res) {
 
 async function AddReservation(req, res) {
   try {
-    const newReservation = await reservationService.AddReservation(req);
+    const newReservation = await reservationService.AddReservation(req.body);
     res.status(201);
     res.json(newReservation);
   } catch (error) {

@@ -43,14 +43,23 @@ function generateToken(user) {
 }
 
 function verifyToken(req, res, next) {
-  const token = req.headers["authorization"];
-  console.log ("token",token);
+  const authHeader = req.headers["authorization"];
+  console.log("auth header", authHeader);
 
-  if (!token) {
+  if (!authHeader) {
     return res.status(403).send({ message: "Aucun token fourni" });
-  } 
+  }
+  
+  // Extraire le token du format "Bearer <token>"
+  const token = authHeader.startsWith("Bearer ") 
+    ? authHeader.substring(7) 
+    : authHeader;
+  
+  console.log("token extrait", token);
+  
   jwt.verify(token, "SECRET", (err, decoded) => {
     if (err) {
+      console.error("Erreur de vérification du token:", err);
       return res.status(401).send({ message: "Non autorisé!" });
     }
     req.user = decoded;

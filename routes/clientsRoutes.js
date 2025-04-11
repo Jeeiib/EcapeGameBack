@@ -64,8 +64,8 @@ router.get("/email/:email", (req, res) => {
 });
 
 // Route to get One client
-router.get("/:id", (req, res) => {
-    ClientsController.OneClient(req, res);
+router.get("/:id", AuthController.verifyToken, (req, res) => {
+  ClientsController.OneClient(req, res);
 });
 
 module.exports = router;

@@ -115,6 +115,7 @@ async function AddClient (req,res) {
     }
 }
 
+
 async function UpdateClient(req, res) {
     try {
         // Vérifier que l'ID client existe

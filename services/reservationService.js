@@ -38,6 +38,15 @@ function averageTotalCost() {
     });
 }
 
+function reservationsByClientId(id_client) {
+  return connection
+    .promise()
+    .query("SELECT reservation.*, escape_game.nom_escape FROM reservation JOIN escape_game ON escape_game.id_escape = reservation.id_escape WHERE id_client = ?", [id_client])
+    .then((results) => {
+      return results[0];
+    });
+}
+
 function costAbove(price) {
   return connection
     .promise()
@@ -203,4 +212,5 @@ module.exports = {
     UpdateReservation,
     DeleteReservation,
     reservationsByEscapeId,
+    reservationsByClientId
     };

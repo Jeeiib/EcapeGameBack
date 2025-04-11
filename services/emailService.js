@@ -30,6 +30,33 @@ const transporter = nodemailer.createTransport({
  * @param {Object} paymentInfo - Les informations de paiement
  */
 
+function getGameImage(gameName) {
+  if (!gameName) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/default-game.jpg`;
+  }
+
+  const gameNameLower = gameName.toLowerCase();
+  
+  // Même logique que dans vos composants React
+  if (gameNameLower.includes("trône de fer") || gameNameLower.includes("trone de fer")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/TroneDeFer.png`;
+  } else if (gameNameLower.includes("quête du jedi") || gameNameLower.includes("quete du jedi")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/LaQueteduJedi.jpg`;
+  } else if (gameNameLower.includes("épreuve des sorciers") || gameNameLower.includes("epreuve des sorciers")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/EpreuveDesSorciers.jpg`;
+  } else if (gameNameLower.includes("quête d'azeroth") || gameNameLower.includes("quete d'azeroth")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/LaQueteAzeroth.jpg`;
+  } else if (gameNameLower.includes("légende de l'arène") || gameNameLower.includes("legende de l'arene")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/LaLegendeDeArene.jpg`;
+  } else if (gameNameLower.includes("énigmes de l'absence") || gameNameLower.includes("enigmes de l'absence")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/EnigmeAbsence.webp`;
+  } else if (gameNameLower.includes("atelier des engrenages")) {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/AtelierDesEngrenages.jpg`;
+  } else {
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/assets/default-game.jpg`;
+  }
+}
+
 // Ajouter cette fonction à votre service d'email
 async function sendTestEmail(toEmail) {
   try {
@@ -117,7 +144,24 @@ async function sendBookingConfirmation(reservation, game, user, paymentInfo) {
     const template = handlebars.compile(templateSource);
 
     // Formatage de la date et de l'heure
-    const reservationDate = new Date(reservation.date_heure);
+    let reservationDate;
+if (typeof reservation.date_heure === 'string') {
+  if (reservation.date_heure.includes('T')) {
+    // Si le format est déjà ISO
+    reservationDate = new Date(reservation.date_heure);
+  } else {
+    // Si le format est 'YYYY-MM-DD HH:MM:SS' (MySQL)
+    // Parsez explicitement la chaîne pour éviter les problèmes de fuseau horaire
+    const [datePart, timePart] = reservation.date_heure.split(' ');
+    reservationDate = new Date(`${datePart}T${timePart}`);
+  }
+} else {
+  reservationDate = new Date(reservation.date_heure);
+}
+
+// Ajouter un jour à la date pour corriger le décalage
+reservationDate.setDate(reservationDate.getDate() + 1);
+
     const formattedDate = reservationDate.toLocaleDateString("fr-FR", {
       weekday: "long",
       day: "numeric",
@@ -134,11 +178,6 @@ async function sendBookingConfirmation(reservation, game, user, paymentInfo) {
     const context = {
       userName: user.prenom + " " + user.nom,
       gameName: game.nom_escape,
-      gameImage: `${
-        process.env.FRONTEND_URL || "http://localhost:5173"
-      }/../assets/${encodeURIComponent(
-        game.nom_escape.toLowerCase().replace(/\s/g, "-")
-      )}.jpg`,
       date: formattedDate,
       time: formattedTime,
       location: reservation.lieu,
@@ -147,11 +186,11 @@ async function sendBookingConfirmation(reservation, game, user, paymentInfo) {
       reservationStatus: reservation.reservation_status,
       paymentMethod: paymentInfo.payment_method,
       isAtHome: reservation.lieu === "À domicile",
-      address: user.address || "Non spécifiée",
-      specialRequests: user.specialRequests || "Aucune",
+      address: reservation.contact_info?.address || user.address || "Non spécifiée",
+      specialRequests: reservation.contact_info?.specialRequests || user.specialRequests || "Aucune",
       reservationNumber: reservation.id_reservation,
-      contactEmail: process.env.CONTACT_EMAIL || "contact@enigmes-evadees.fr",
-      contactPhone: process.env.CONTACT_PHONE || "01 23 45 67 89",
+      contactEmail: "renartjeanbaptiste@gmail.com",
+      contactPhone: "06 18 97 22 50",
       websiteUrl: process.env.FRONTEND_URL || "http://localhost:5173",
     };
 

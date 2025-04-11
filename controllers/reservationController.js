@@ -84,6 +84,21 @@ async function reservationsByEscapeId(req, res) {
   }
 }
 
+async function reservationsByClientId(req, res) {
+  try {
+    const reservations = await reservationService.reservationsByClientId(
+      req.params.id
+    );
+    res.status(200).json(reservations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "An error occurred while fetching reservations for this client."
+    });
+  }
+}
+
+
 async function reservationsByNomEscape(req, res) {
   try {
     const reservationsByNomEscape =
@@ -159,6 +174,12 @@ async function AddReservation(req, res) {
         payment_method: req.body.payment_method || "Non spécifié",
       };
 
+      if (req.body.contact_info) {
+        // S'assurer que les données de contact sont bien transmises à l'objet newReservation
+        newReservation.contact_info = req.body.contact_info;
+        console.log("Contact info ajoutées à la réservation:", newReservation.contact_info);
+      }
+
       // Tenter l'envoi de l'email
       const emailResult = await emailService.sendBookingConfirmation(newReservation, game, user, paymentInfo);
       console.log("✅ Email envoyé avec succès:", emailResult.messageId);
@@ -223,4 +244,5 @@ module.exports = {
   UpdateReservation,
   DeleteReservation,
   reservationsByEscapeId,
+  reservationsByClientId
 };

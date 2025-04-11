@@ -28,6 +28,11 @@ router.get("/costAbove/:price", (req, res) => {
   ReservationsController.costAbove(req, res);
 });
 
+// Route to get reservations by client ID
+router.get("/client/:id", (req, res) => {
+  ReservationsController.reservationsByClientId(req, res);
+});
+
 // Route to get reservations by name of the game
 router.get("/nameEscape/:nom", (req, res) => {
   ReservationsController.reservationsByNomEscape(req, res);

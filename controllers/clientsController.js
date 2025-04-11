@@ -193,12 +193,18 @@ async function GetClientByEmail(req, res) {
 
 async function findMe(req,res) {
     try {
+        // req.user est extrait du token par le middleware verifyToken
+        // et contient l'ID du client dans req.user.id
         const user = await clientsService.oneClient(req.user.id);
-        res.status(200);
-        res.json(user);
+        
+        if (!user) {
+          return res.status(404).json({ error: 'Client not found.' });
+        }
+        
+        res.status(200).json(user);
     } catch (error) {
-        res.status(500);
-        res.json({ error: 'An error occurred while fetching the client.' });
+        console.error("Erreur dans findMe:", error);
+        res.status(500).json({ error: 'An error occurred while fetching the client details.' });
     }
 }
 

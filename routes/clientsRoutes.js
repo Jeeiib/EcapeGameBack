@@ -8,9 +8,9 @@ router.get("/", (req, res) => {
   ClientsController.AllClients(req, res);
 });
 
-// Route to get me
-router.get("/me", (req, res) => {
-  ClientsController.Me(req, res);
+// Par celle-ci
+router.get("/me", AuthController.verifyToken, (req, res) => {
+  ClientsController.findMe(req, res);
 });
 
 // Route to get clients by year

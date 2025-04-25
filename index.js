@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
 
@@ -9,6 +10,8 @@ const authRoutes = require("./routes/authRoutes");
 const escapesRoutes = require("./routes/escapeRoutes");
 const paymentsRoutes = require("./routes/paymentsRoutes");
 const reservationRoutes = require("./routes/reservationRoute");
+const contactRoutes = require("./routes/contactRoute");
+const galleryRoutes = require("./routes/galleryRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +29,9 @@ app.use("/auth", authRoutes);
 app.use("/escapes", escapesRoutes);
 app.use("/payments", paymentsRoutes);
 app.use("/reservations", reservationRoutes);
+app.use("/contact", contactRoutes);
+app.use("/gallery", galleryRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Route de base
 app.get("/", (req, res) => {

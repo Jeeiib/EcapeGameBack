@@ -41,10 +41,44 @@ function averageTotalCost() {
 function reservationsByClientId(id_client) {
   return connection
     .promise()
-    .query("SELECT reservation.*, escape_game.nom_escape FROM reservation JOIN escape_game ON escape_game.id_escape = reservation.id_escape WHERE id_client = ?", [id_client])
+    .query(
+      "SELECT r.*, e.nom_escape FROM reservation r JOIN escape_game e ON e.id_escape = r.id_escape WHERE r.id_client = ?", 
+      [id_client]
+    )
     .then((results) => {
       return results[0];
     });
+}
+
+/**
+ * Récupère les réservations passées d'un client pour un escape game spécifique
+ * @param {number} clientId - ID du client
+ * @param {number} escapeId - ID de l'escape game (optionnel)
+ */
+async function getClientPastReservations(clientId, escapeId = null) {
+  try {
+    let query = `
+      SELECT r.*, e.nom_escape 
+      FROM reservation r
+      JOIN escape_game e ON r.id_escape = e.id_escape
+      WHERE r.id_client = ? 
+      AND DATE(r.date_heure) < CURRENT_DATE()
+      AND r.reservation_status != 'Annulé'
+    `;
+    
+    const params = [clientId];
+    
+    if (escapeId) {
+      query += " AND r.id_escape = ?";
+      params.push(escapeId);
+    }
+    
+    const [reservations] = await connection.promise().query(query, params);
+    return reservations;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des réservations passées:", error);
+    throw error;
+  }
 }
 
 function costAbove(price) {
@@ -203,6 +237,7 @@ async function DeleteReservation(id) {
 module.exports = {
     allReservations,
     OneReservation,
+    getClientPastReservations,
     reservationsByStatus,
     averageTotalCost,
     costAbove,

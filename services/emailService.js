@@ -97,6 +97,48 @@ async function sendTestEmail(toEmail) {
   }
 }
 
+async function sendContactEmail(name, email, phone, subject, message, recipient) {
+  try {
+    console.log("=== DÉBUT ENVOI EMAIL DE CONTACT ===");
+    
+    const mailOptions = {
+      from: `"Énigmes Évadées - Formulaire de contact" <${process.env.EMAIL_USER || "renartjeanbaptiste@gmail.com"}>`,
+      to: recipient,
+      subject: `Nouveau message de contact: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #1b263b; border-bottom: 2px solid #1b263b; padding-bottom: 10px;">Nouveau message de contact</h2>
+          
+          <div style="margin: 20px 0;">
+            <p><strong>Nom :</strong> ${name}</p>
+            <p><strong>Email :</strong> ${email}</p>
+            ${phone ? `<p><strong>Téléphone :</strong> ${phone}</p>` : ''}
+            <p><strong>Sujet :</strong> ${subject}</p>
+          </div>
+          
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #415a77;">Message :</h3>
+            <p style="white-space: pre-line;">${message}</p>
+          </div>
+          
+          <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px;">
+            Ce message a été envoyé depuis le formulaire de contact du site web Énigmes Évadées.
+          </p>
+        </div>
+      `,
+      replyTo: email
+    };
+
+    // Envoyer l'email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email de contact envoyé:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email de contact:", error);
+    throw error;
+  }
+}
+
 async function sendBookingConfirmation(reservation, game, user, paymentInfo) {
   try {
     console.log("=== DÉBUT ENVOI EMAIL ===");
@@ -229,4 +271,5 @@ reservationDate.setDate(reservationDate.getDate() + 1);
 module.exports = {
   sendBookingConfirmation,
   sendTestEmail,
+  sendContactEmail,
 };

@@ -4,7 +4,7 @@ function allClients() {
   return connection
     .promise()
     .query(
-      "SELECT id_client, prenom, nom, email, phone, date_enregistrement FROM client"
+      "SELECT id_client, prenom, nom, email, phone, date_enregistrement, role FROM client"
     )
     .then((results) => {
       return results[0];

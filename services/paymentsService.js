@@ -3,7 +3,18 @@ const connection = require("../config/bdd");
 function allPayments() {
   return connection
     .promise()
-    .query("SELECT * FROM payment")
+    .query(`
+      SELECT p.*, 
+             r.id_reservation, 
+             c.id_client,
+             CONCAT(c.prenom, ' ', c.nom) as client_name,
+             e.nom_escape
+      FROM payment p
+      LEFT JOIN payer py ON py.id_payment = p.id_payment
+      LEFT JOIN reservation r ON r.id_reservation = py.id_reservation
+      LEFT JOIN client c ON c.id_client = r.id_client
+      LEFT JOIN escape_game e ON e.id_escape = r.id_escape
+    `)
     .then((results) => {
       return results[0];
     });

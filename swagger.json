@@ -173,6 +173,68 @@
             "description": "JWT token pour l'authentification"
           }
         }
+      },
+      "Reward": {
+        "type": "object",
+        "properties": {
+          "id_reward": {
+            "type": "integer",
+            "example": 1
+          },
+          "code": {
+            "type": "string",
+            "example": "ESCAPE10"
+          },
+          "id_client": {
+            "type": "integer",
+            "example": 1
+          },
+          "discount_percent": {
+            "type": "integer",
+            "example": 10
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-04-30T23:59:59"
+          },
+          "used": {
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-12-15T14:30:00"
+          }
+        }
+      },
+      "GalleryImage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "image_path": {
+            "type": "string",
+            "example": "/uploads/gallery/image1.jpg"
+          },
+          "title": {
+            "type": "string",
+            "example": "Escape Game - La Chambre du Dragon"
+          },
+          "description": {
+            "type": "string",
+            "example": "Une aventure immersive dans l'antre du dragon."
+          },
+          "upload_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-15T14:30:00"
+          }
+        }
       }
     }
   },
@@ -2304,6 +2366,453 @@
           },
           "500": {
             "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/rewards": {
+      "get": {
+        "tags": ["Récompenses"],
+        "summary": "Récupérer toutes les récompenses",
+        "description": "Retourne la liste de toutes les récompenses",
+        "responses": {
+          "200": {
+            "description": "Liste des récompenses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reward"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Récompenses"],
+        "summary": "Ajouter une nouvelle récompense",
+        "description": "Créer une nouvelle récompense (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code",
+                  "id_client",
+                  "discount_percent",
+                  "expiration_date"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "ESCAPE10"
+                  },
+                  "id_client": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "discount_percent": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "expiration_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-30T23:59:59"
+                  },
+                  "used": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "default": 0,
+                    "example": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Récompense créée avec succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/rewards/code/{code}": {
+      "get": {
+        "tags": ["Récompenses"],
+        "summary": "Récupérer une récompense par code",
+        "description": "Retourne les informations d'une récompense spécifique par son code",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Code de la récompense"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations de la récompense",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reward"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Récompense non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/rewards/user/{id}": {
+      "get": {
+        "tags": ["Récompenses"],
+        "summary": "Récupérer les récompenses d'un utilisateur",
+        "description": "Retourne la liste des récompenses associées à un utilisateur",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'utilisateur"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des récompenses de l'utilisateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reward"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/rewards/{id}": {
+      "get": {
+        "tags": ["Récompenses"],
+        "summary": "Récupérer une récompense par ID",
+        "description": "Retourne les informations d'une récompense spécifique",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la récompense"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informations de la récompense",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reward"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Récompense non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Récompenses"],
+        "summary": "Mettre à jour une récompense",
+        "description": "Met à jour les informations d'une récompense existante (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la récompense"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "used": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "example": 1
+                  },
+                  "expiration_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-05-30T23:59:59"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Récompense mise à jour avec succès"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Récompense non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Récompenses"],
+        "summary": "Supprimer une récompense",
+        "description": "Supprime une récompense existante (nécessite une authentification)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la récompense à supprimer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Récompense supprimée avec succès"
+          },
+          "401": {
+            "description": "Non autorisé - Token manquant ou invalide"
+          },
+          "404": {
+            "description": "Récompense non trouvée"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/contact": {
+      "post": {
+        "tags": ["Contact"],
+        "summary": "Envoyer un message de contact",
+        "description": "Envoie un nouveau message de contact",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nom", "email", "message"],
+                "properties": {
+                  "nom": {
+                    "type": "string",
+                    "example": "Jean Dupont"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jean.dupont@example.com"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Je souhaite réserver une séance pour mon anniversaire."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message envoyé avec succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/gallery/photos": {
+      "get": {
+        "tags": ["Galerie"],
+        "summary": "Récupérer toutes les images de la galerie",
+        "description": "Retourne la liste de toutes les images de la galerie",
+        "responses": {
+          "200": {
+            "description": "Liste des images",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GalleryImage"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      },
+      "/gallery/upload": {
+        "post": {
+          "tags": ["Galerie"],
+          "summary": "Ajouter une nouvelle image",
+          "description": "Ajouter une nouvelle image à la galerie (nécessite une authentification)",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "image": {
+                      "type": "string",
+                      "format": "binary",
+                      "description": "Image à télécharger"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Titre de l'image"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Description de l'image"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Image ajoutée avec succès"
+            },
+            "400": {
+              "description": "Données invalides"
+            },
+            "401": {
+              "description": "Non autorisé - Token manquant ou invalide"
+            },
+            "500": {
+              "description": "Erreur serveur"
+            }
+          }
+        }
+      },
+      "/gallery/photos/game/{gameId}": {
+        "delete": {
+          "tags": ["Galerie"],
+          "summary": "Supprimer une image",
+          "description": "Supprime une image de la galerie (nécessite une authentification)",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              },
+              "description": "ID de l'image à supprimer"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Image supprimée avec succès"
+            },
+            "401": {
+              "description": "Non autorisé - Token manquant ou invalide"
+            },
+            "404": {
+              "description": "Image non trouvée"
+            },
+            "500": {
+              "description": "Erreur serveur"
+            }
           }
         }
       }

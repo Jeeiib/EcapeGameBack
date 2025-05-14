@@ -12,6 +12,7 @@ const paymentsRoutes = require("./routes/paymentsRoutes");
 const reservationRoutes = require("./routes/reservationRoute");
 const contactRoutes = require("./routes/contactRoute");
 const galleryRoutes = require("./routes/galleryRoutes");
+const rewardRoutes = require("./routes/rewardRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use("/reservations", reservationRoutes);
 app.use("/contact", contactRoutes);
 app.use("/gallery", galleryRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/rewards", rewardRoutes);
 
 // Route de base
 app.get("/", (req, res) => {

@@ -3,7 +3,13 @@ const connection = require("../config/bdd");
 function allReservations() {
   return connection
     .promise()
-    .query("SELECT * FROM reservation")
+    .query(`
+      SELECT r.*, c.prenom, c.nom, e.nom_escape 
+      FROM reservation r
+      LEFT JOIN client c ON r.id_client = c.id_client
+      LEFT JOIN escape_game e ON r.id_escape = e.id_escape
+      ORDER BY r.date_heure DESC
+    `)
     .then((results) => {
       return results[0];
     });
